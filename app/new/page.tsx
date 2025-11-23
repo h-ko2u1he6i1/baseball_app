@@ -195,7 +195,6 @@ export default function NewRecordPage() {
                   label="日付"
                   value={selectedDate}
                   onChange={handleDateChange}
-                  openOnFieldClick={true}
                   renderInput={(params) => <TextField {...params} fullWidth onClick={params.onClick} />}
                 />
                 {isScraping && <CircularProgress size={24} />}
