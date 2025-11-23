@@ -109,7 +109,11 @@ export default function Home() {
       if (error) {
         setError('観戦記録の取得に失敗しました: ' + error.message);
       } else {
-        setRecords(data || []);
+        const transformedData = (data || []).map(record => ({
+          ...record,
+          games: Array.isArray(record.games) ? (record.games[0] || null) : record.games,
+        }));
+        setRecords(transformedData);
       }
       setLoading(false);
     }
