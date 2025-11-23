@@ -267,7 +267,7 @@ export default function Home() {
       return (
         <Grid container spacing={0} sx={{ width: '100%' }}>
           {displayedRecords.map((record) => (
-            <Grid item xs={12} key={record.id}>
+            <Grid xs={12} key={record.id}>
               <Link href={`/edit/${record.id}`} passHref style={{ textDecoration: 'none', color: 'inherit' }}>
                 <Card sx={{ width: '100%', mb: 2, cursor: 'pointer' }}>
                   <CardContent>
