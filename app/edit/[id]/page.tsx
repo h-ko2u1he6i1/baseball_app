@@ -238,7 +238,6 @@ export default function EditRecordPage() {
                     handleDateChange(newValue);
                     setSelectedGameId('');
                   }}
-                  openOnFieldClick={true}
                   renderInput={(params) => <TextField {...params} fullWidth onClick={params.onClick} />}
                 />
                 {isScraping && <CircularProgress size={24} />}
