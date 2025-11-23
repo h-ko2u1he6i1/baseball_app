@@ -5,9 +5,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "scrape": "ts-node --project scripts/tsconfig.json scripts/scrape-npb.ts",
-    "cleanup": "ts-node --project scripts/tsconfig.json scripts/cleanup-games.ts"
+    "lint": "next lint"
   },
   "keywords": [],
   "author": "",

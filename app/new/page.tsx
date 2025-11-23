@@ -195,8 +195,6 @@ export default function NewRecordPage() {
                   label="日付"
                   value={selectedDate}
                   onChange={handleDateChange}
-                  slots={{ textField: TextField }}
-                  slotProps={{ textField: { fullWidth: true } }}
                 />
                 {isScraping && <CircularProgress size={24} />}
               </Box>
