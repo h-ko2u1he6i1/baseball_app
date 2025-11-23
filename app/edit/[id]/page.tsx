@@ -238,7 +238,7 @@ export default function EditRecordPage() {
                     handleDateChange(newValue);
                     setSelectedGameId('');
                   }}
-                  renderInput={(params) => <TextField {...params} fullWidth onClick={params.onClick} />}
+                  slotProps={{ textField: { fullWidth: true } }}
                 />
                 {isScraping && <CircularProgress size={24} />}
               </Box>
