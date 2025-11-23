@@ -31,8 +31,8 @@ import {
   useMediaQuery,
   Card,
   CardContent,
-  Grid
 } from '@mui/material';
+import Grid from '@mui/material/Grid';
 import { Add as AddIcon, Delete as DeleteIcon, Cancel as CancelIcon } from '@mui/icons-material';
 
 interface Record {
