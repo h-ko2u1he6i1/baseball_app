@@ -231,7 +231,7 @@ export default function NewRecordPage() {
                   [
                     <MenuItem key="placeholder" value=""><em>試合を選択してください</em></MenuItem>,
                     ...filteredGames.map((game) => (
-                      <MenuItem key={game.id} value={game.id}>
+                      <MenuItem key={game.id} value={String(game.id)}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                           {getTeamLogoSrc(game.home_team) && <Avatar src={getTeamLogoSrc(game.home_team)} alt={game.home_team} sx={{ width: 24, height: 24 }} />}
                           {game.home_team}
