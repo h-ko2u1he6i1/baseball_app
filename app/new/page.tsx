@@ -65,12 +65,18 @@ export default function NewRecordPage() {
   const [memo, setMemo] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedDate, setSelectedDate] = useState<Dayjs | null>(dayjs());
+  const [selectedDate, setSelectedDate] = useState<Dayjs | null>(null);
   const [displayStadium, setDisplayStadium] = useState<string>('');
   const [displayWinningPitcher, setDisplayWinningPitcher] = useState<string>('');
   const [displayLosingPitcher, setDisplayLosingPitcher] = useState<string>('');
   const router = useRouter();
   const [isScraping, setIsScraping] = useState(false);
+
+  useEffect(() => {
+    // This effect runs only once on the client, after the initial render,
+    // to prevent a hydration mismatch.
+    setSelectedDate(dayjs());
+  }, []);
 
   const fetchGames = async () => {
     const { data, error } = await supabase
