@@ -201,6 +201,7 @@ export default function NewRecordForm() {
                   label="日付"
                   value={selectedDate}
                   onChange={handleDateChange}
+                  enableAccessibleFieldDOMStructure={false} // この行を追加
                 />
                 {isScraping && <CircularProgress size={24} />}
               </Box>
