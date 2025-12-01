@@ -2,7 +2,6 @@
 import * as React from 'react';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
-import { NextAppDirEmotionCacheProvider } from '@mui/material-nextjs/v14-emotion';
 import Box from '@mui/material/Box';
 
 const theme = createTheme({
@@ -163,19 +162,17 @@ const theme = createTheme({
 
 export default function ThemeRegistry({ children }: { children: React.ReactNode }) {
   return (
-    <NextAppDirEmotionCacheProvider options={{ key: 'mui' }}>
-      <ThemeProvider theme={theme}>
-        {/* CssBaseline kickstarts an elegant, consistent, and simple baseline to build upon. */}
-        <CssBaseline />
-        <Box sx={{
-          minHeight: '100vh',
-          backgroundColor: 'rgba(255, 255, 255, 0.7)', // Semi-transparent white overlay
-          display: 'flex',
-          flexDirection: 'column',
-        }}>
-          {children}
-        </Box>
-      </ThemeProvider>
-    </NextAppDirEmotionCacheProvider>
+    <ThemeProvider theme={theme}>
+      {/* CssBaseline kickstarts an elegant, consistent, and simple baseline to build upon. */}
+      <CssBaseline />
+      <Box sx={{
+        minHeight: '100vh',
+        backgroundColor: 'rgba(255, 255, 255, 0.7)', // Semi-transparent white overlay
+        display: 'flex',
+        flexDirection: 'column',
+      }}>
+        {children}
+      </Box>
+    </ThemeProvider>
   );
 }
