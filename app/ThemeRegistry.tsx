@@ -1,7 +1,8 @@
 'use client';
-
+import * as React from 'react';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
+import { NextAppDirEmotionCacheProvider } from '@mui/material-nextjs/v14-emotion';
 import Box from '@mui/material/Box';
 
 const theme = createTheme({
@@ -69,7 +70,6 @@ const theme = createTheme({
             boxShadow: 'none',
           },
         },
-        // Contained Primary
         containedPrimary: ({
           theme
         }) => ({
@@ -78,10 +78,9 @@ const theme = createTheme({
             backgroundColor: theme.palette.primary.contrastText,
             color: theme.palette.primary.main,
             border: '1px solid',
-            borderColor: theme.palette.primary.main, // Add border for visual consistency
+            borderColor: theme.palette.primary.main,
           },
         }),
-        // Outlined Primary
         outlinedPrimary: ({
           theme
         }) => ({
@@ -90,7 +89,6 @@ const theme = createTheme({
             color: theme.palette.primary.contrastText,
           },
         }),
-        // Contained Secondary
         containedSecondary: ({
           theme
         }) => ({
@@ -102,7 +100,6 @@ const theme = createTheme({
             borderColor: theme.palette.secondary.main,
           },
         }),
-        // Outlined Secondary
         outlinedSecondary: ({
           theme
         }) => ({
@@ -111,16 +108,14 @@ const theme = createTheme({
             color: theme.palette.secondary.contrastText,
           },
         }),
-        // Text Primary (optional, usually just a slight background change)
         textPrimary: ({
           theme
         }) => ({
           '&:hover': {
-            backgroundColor: theme.palette.action.hover, // Use default hover background
-            color: theme.palette.primary.main, // Keep primary color
+            backgroundColor: theme.palette.action.hover,
+            color: theme.palette.primary.main,
           },
         }),
-        // Text Secondary
         textSecondary: ({
           theme
         }) => ({
@@ -130,11 +125,11 @@ const theme = createTheme({
           },
         }),
         outlinedError: {
-          backgroundColor: '#f44336', // Red background
-          color: '#ffffff', // White text
-          borderColor: '#f44336', // Red border
+          backgroundColor: '#f44336',
+          color: '#ffffff',
+          borderColor: '#f44336',
           '&:hover': {
-            backgroundColor: '#d32f2f', // Darker red on hover
+            backgroundColor: '#d32f2f',
             borderColor: '#d32f2f',
           },
         },
@@ -155,10 +150,10 @@ const theme = createTheme({
             transition: 'border-color 0.3s ease-in-out',
           },
           '&:hover .MuiOutlinedInput-notchedOutline': {
-            borderColor: 'rgba(0, 0, 0, 0.87)', // Adjust to match MUI's default hover color or a desired color
+            borderColor: 'rgba(0, 0, 0, 0.87)',
           },
           '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-            borderColor: '#212121', // Primary color from palette
+            borderColor: '#212121',
           },
         },
       },
@@ -168,17 +163,19 @@ const theme = createTheme({
 
 export default function ThemeRegistry({ children }: { children: React.ReactNode }) {
   return (
-    <ThemeProvider theme={theme}>
-      {/* CssBaseline kickstarts an elegant, consistent, and simple baseline to build upon. */}
-      <CssBaseline />
-      <Box sx={{
-        minHeight: '100vh',
-        backgroundColor: 'rgba(255, 255, 255, 0.7)', // Semi-transparent white overlay
-        display: 'flex',
-        flexDirection: 'column',
-      }}>
-        {children}
-      </Box>
-    </ThemeProvider>
+    <NextAppDirEmotionCacheProvider options={{ key: 'mui' }}>
+      <ThemeProvider theme={theme}>
+        {/* CssBaseline kickstarts an elegant, consistent, and simple baseline to build upon. */}
+        <CssBaseline />
+        <Box sx={{
+          minHeight: '100vh',
+          backgroundColor: 'rgba(255, 255, 255, 0.7)', // Semi-transparent white overlay
+          display: 'flex',
+          flexDirection: 'column',
+        }}>
+          {children}
+        </Box>
+      </ThemeProvider>
+    </NextAppDirEmotionCacheProvider>
   );
 }
