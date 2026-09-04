@@ -29,7 +29,8 @@ const theme = createTheme({
     borderRadius: 8,
   },
   typography: {
-    fontFamily: '"Noto Sans JP", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"',
+    fontFamily:
+      'var(--font-noto-sans-jp), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"',
     body1: { fontWeight: 700 },
     body2: { fontWeight: 700 },
     button: { fontWeight: 700 },
@@ -38,23 +39,23 @@ const theme = createTheme({
     subtitle1: { fontWeight: 700 },
     subtitle2: { fontWeight: 700 },
     h1: {
-      fontFamily: 'Tektur, sans-serif',
+      fontFamily: 'var(--font-tektur), sans-serif',
     },
     h2: {
-      fontFamily: 'Tektur, sans-serif',
+      fontFamily: 'var(--font-tektur), sans-serif',
     },
     h3: {
-      fontFamily: 'Tektur, sans-serif',
+      fontFamily: 'var(--font-tektur), sans-serif',
       fontWeight: 700,
     },
     h4: {
-      fontFamily: 'Tektur, sans-serif',
+      fontFamily: 'var(--font-tektur), sans-serif',
     },
     h5: {
-      fontFamily: 'Tektur, sans-serif',
+      fontFamily: 'var(--font-tektur), sans-serif',
     },
     h6: {
-      fontFamily: 'Tektur, sans-serif',
+      fontFamily: 'var(--font-tektur), sans-serif',
       fontWeight: 700,
     },
   },

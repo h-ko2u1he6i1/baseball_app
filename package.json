@@ -5,12 +5,16 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit"
+  },
+  "engines": {
+    "node": "20.x"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "",
+  "description": "プロ野球観戦記録アプリ (Next.js + Supabase)",
   "dependencies": {
     "@emotion/cache": "^11.14.0",
     "@emotion/react": "^11.14.0",
@@ -20,16 +24,12 @@
     "@mui/material-nextjs": "^7.3.5",
     "@mui/x-date-pickers": "^8.11.3",
     "@supabase/supabase-js": "^2.56.1",
-    "@tailwindcss/postcss": "^4.1.13",
-    "autoprefixer": "^10.4.21",
-    "axios": "^1.11.0",
     "cheerio": "^1.1.2",
     "dayjs": "^1.11.18",
     "next": "^16.2.1",
-    "postcss": "^8.5.6",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
-    "tailwindcss": "^4.1.12"
+    "server-only": "^0.0.1"
   },
   "devDependencies": {
     "@types/node": "^24.3.0",
@@ -37,8 +37,7 @@
     "@types/react-dom": "^19.1.9",
     "dotenv": "^17.2.2",
     "ts-node": "^10.9.2",
-    "typescript": "^5.9.2",
-    "undici": "^7.16.0"
+    "typescript": "^5.9.2"
   },
   "volta": {
     "node": "20.19.5"

@@ -1,34 +1,34 @@
-import type { Metadata } from "next";
+import type { Metadata } from 'next';
+import { Noto_Sans_JP, Tektur } from 'next/font/google';
+import { AppRouterCacheProvider } from '@mui/material-nextjs/v15-appRouter';
 import ThemeRegistry from './ThemeRegistry';
 import './globals.css';
-import { AppRouterCacheProvider } from '@mui/material-nextjs/v15-appRouter';
+
+const notoSansJp = Noto_Sans_JP({
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '700'],
+  display: 'swap',
+  variable: '--font-noto-sans-jp',
+});
+
+const tektur = Tektur({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  display: 'swap',
+  variable: '--font-tektur',
+});
 
 export const metadata: Metadata = {
-  title: "プロ野球観戦記録アプリ",
-  description: "プロ野球観戦記録アプリ",
+  title: {
+    default: 'プロ野球観戦記録アプリ',
+    template: '%s | プロ野球観戦記録アプリ',
+  },
+  description: 'プロ野球の観戦記録を投稿・一覧できるアプリ',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ja">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Tektur:wght@400;500;600;700&display=swap"
-        />
-        <style dangerouslySetInnerHTML={{ __html: `
-          body {
-            background-image: url('/assets/ph.jpg');
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
-            margin: 0; /* Remove default body margin */
-            padding: 0; /* Remove default body padding */
-          }
-        `}} />
-      </head>
+    <html lang="ja" className={`${notoSansJp.variable} ${tektur.variable}`}>
       <body suppressHydrationWarning>
         <AppRouterCacheProvider>
           <ThemeRegistry>{children}</ThemeRegistry>
