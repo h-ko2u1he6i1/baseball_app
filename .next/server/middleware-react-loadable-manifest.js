@@ -1,1 +1,0 @@
-self.__REACT_LOADABLE_MANIFEST="{\"app/new/page.tsx -> ./NewRecordForm\":{\"id\":\"app/new/page.tsx -> ./NewRecordForm\",\"files\":[\"static/chunks/_app-pages-browser_app_new_NewRecordForm_tsx.js\"]}}"
