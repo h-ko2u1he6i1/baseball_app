@@ -1,5 +1,6 @@
 import 'server-only';
 import * as cheerio from 'cheerio';
+import { isValidDateString } from './date';
 
 export interface ScrapedGame {
   game_code: string;
@@ -11,13 +12,6 @@ export interface ScrapedGame {
   stadium: string | null;
   winning_pitcher: string | null;
   losing_pitcher: string | null;
-}
-
-/** "YYYY-MM-DD" 形式かつ妥当な日付かを判定 */
-export function isValidDateString(s: unknown): s is string {
-  if (typeof s !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(s)) return false;
-  const d = new Date(`${s}T00:00:00Z`);
-  return !Number.isNaN(d.getTime()) && s === d.toISOString().slice(0, 10);
 }
 
 /**

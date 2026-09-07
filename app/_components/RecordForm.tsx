@@ -116,10 +116,11 @@ export default function RecordForm({
       try {
         if (mode === 'new') {
           await createRecord({ gameId: selectedGame.id, memo });
+          router.push('/?flash=created');
         } else {
           await updateRecord(recordId!, { gameId: selectedGame.id, memo });
+          router.push('/?flash=updated');
         }
-        router.push('/');
         router.refresh();
       } catch (err: unknown) {
         setError(err instanceof Error ? err.message : '保存に失敗しました');
@@ -134,7 +135,7 @@ export default function RecordForm({
     startTransition(async () => {
       try {
         await deleteRecords([recordId]);
-        router.push('/');
+        router.push('/?flash=deleted');
         router.refresh();
       } catch (err: unknown) {
         setError(err instanceof Error ? err.message : '削除に失敗しました');
@@ -157,7 +158,7 @@ export default function RecordForm({
     <Container maxWidth="sm" sx={{ py: 4 }}>
       <Paper elevation={3} sx={{ p: 4 }}>
         <Typography variant="h4" component="h1" gutterBottom align="center" fontWeight="bold">
-          {mode === 'new' ? 'New Games' : '記録を編集'}
+          {mode === 'new' ? '新しい観戦記録' : '記録を編集'}
         </Typography>
 
         {error && (

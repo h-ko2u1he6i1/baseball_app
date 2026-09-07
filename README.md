@@ -6,9 +6,10 @@ Next.js (App Router) + MUI + Supabase。試合データは npb.jp をスクレ�
 
 | 層 | 実装 |
 |---|---|
-| 一覧取得 | Server Component (`app/page.tsx`) が service role key で Supabase から取得 |
-| 追加 / 編集 / 削除 | Server Actions (`app/actions.ts`)。RLS をバイパスする service role key を使用 |
+| 一覧取得 | Server Component (`app/page.tsx`) が Secret key で Supabase から取得 |
+| 追加 / 編集 / 削除 | Server Actions (`app/actions.ts`)。RLS をバイパスする Secret key を使用 |
 | スクレイピング | `lib/scrape.ts`（純ロジック）+ `app/api/cron/scrape/route.ts`（Vercel Cron） |
+| 集計・日付 | `lib/stats.ts` / `lib/date.ts`（純関数・ユニットテスト対象） |
 | 認証 | `proxy.ts` の Basic 認証（`BASIC_AUTH_USER` / `BASIC_AUTH_PASS`） |
 
 ブラウザから Supabase を直接叩かない。anon key は使用しない。
@@ -18,6 +19,25 @@ Next.js (App Router) + MUI + Supabase。試合データは npb.jp をスクレ�
 1. `.env.example` を `.env.local` にコピーして値を設定
 2. `npm install`
 3. `npm run dev`
+
+## スクリプト
+
+| コマンド | 内容 |
+|---|---|
+| `npm run dev` / `build` / `start` | Next.js |
+| `npm run lint` | ESLint (`eslint-config-next`) |
+| `npm run typecheck` | `tsc --noEmit` |
+| `npm test` | Vitest（`lib/*.test.ts`） |
+
+## 型（任意）
+
+Supabase のスキーマ型を付けるなら:
+
+```
+npx supabase gen types typescript --project-id <project-id> > lib/database.types.ts
+```
+
+生成後、`lib/supabase/admin.ts` の `createClient` を `createClient<Database>(...)` に差し替える。
 
 ## Supabase
 

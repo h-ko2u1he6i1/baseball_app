@@ -2,12 +2,13 @@
 
 import { useEffect, useMemo, useState, useTransition } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import {
   Container,
   Typography,
   Box,
   Alert,
+  Snackbar,
   Button,
   Select,
   MenuItem,
@@ -27,46 +28,31 @@ import {
   useMediaQuery,
   Card,
   CardContent,
+  CardActionArea,
   SelectChangeEvent,
 } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import { Add as AddIcon, Delete as DeleteIcon, Cancel as CancelIcon } from '@mui/icons-material';
 
 import { NPB_TEAMS, getTeamLogoSrc } from '@/lib/teams';
+import { formatIsoDate } from '@/lib/date';
+import { gameYear, winLoss, formatWinPct, tallyWinLoss } from '@/lib/stats';
 import type { RecordWithGame } from '@/lib/types';
 import { deleteRecords } from '@/app/actions';
 
 type SortOrder = 'asc' | 'desc';
 
-function gameYear(r: RecordWithGame): number | null {
-  if (!r.games?.date) return null;
-  const y = Number(r.games.date.slice(0, 4));
-  return Number.isFinite(y) ? y : null;
-}
-
-function winLoss(r: RecordWithGame, team: string): 'win' | 'loss' | null {
-  const g = r.games;
-  if (!g || g.home_score == null || g.away_score == null) return null;
-  if (team === g.home_team) {
-    if (g.home_score > g.away_score) return 'win';
-    if (g.home_score < g.away_score) return 'loss';
-  } else if (team === g.away_team) {
-    if (g.away_score > g.home_score) return 'win';
-    if (g.away_score < g.home_score) return 'loss';
-  }
-  return null;
-}
-
-function formatPct(wins: number, losses: number): string {
-  const total = wins + losses;
-  if (total === 0) return '.000';
-  return (wins / total).toFixed(3).replace(/^0/, '');
-}
+const FLASH_MESSAGES: Record<string, string> = {
+  created: '記録を追加しました',
+  updated: '記録を更新しました',
+  deleted: '記録を削除しました',
+};
 
 export default function RecordsView({ initialRecords }: { initialRecords: RecordWithGame[] }) {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'), { noSsr: true });
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const [favoriteTeam, setFavoriteTeam] = useState<string | null>(null);
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
@@ -76,7 +62,17 @@ export default function RecordsView({ initialRecords }: { initialRecords: Record
   const [isDeleteMode, setIsDeleteMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [error, setError] = useState<string | null>(null);
+  const [flash, setFlash] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+
+  // 追加/更新/削除後のトースト（?flash= を読んで URL は消す）
+  useEffect(() => {
+    const key = searchParams.get('flash');
+    if (key && FLASH_MESSAGES[key]) {
+      setFlash(FLASH_MESSAGES[key]);
+      router.replace('/', { scroll: false });
+    }
+  }, [searchParams, router]);
 
   // 応援球団の永続化
   useEffect(() => {
@@ -97,15 +93,14 @@ export default function RecordsView({ initialRecords }: { initialRecords: Record
     return [...set].sort((a, b) => b - a);
   }, [initialRecords]);
 
-  // 選択中の年が候補に無ければ最新年へ寄せる
-  useEffect(() => {
-    if (availableYears.length > 0 && !availableYears.includes(selectedYear)) {
-      setSelectedYear(availableYears[0]);
-    }
-  }, [availableYears, selectedYear]);
+  // 選択中の年が候補に無ければ最新年を使う（state は書き換えず派生値で吸収）
+  const effectiveYear =
+    availableYears.length > 0 && !availableYears.includes(selectedYear)
+      ? availableYears[0]
+      : selectedYear;
 
   const displayedRecords = useMemo(() => {
-    let rows = initialRecords.filter((r) => gameYear(r) === selectedYear);
+    let rows = initialRecords.filter((r) => gameYear(r) === effectiveYear);
     if (favoriteTeam) {
       rows = rows.filter(
         (r) => r.games && (r.games.home_team === favoriteTeam || r.games.away_team === favoriteTeam),
@@ -123,21 +118,13 @@ export default function RecordsView({ initialRecords }: { initialRecords: Record
       const db = b.games?.date ?? '';
       return sortOrder === 'asc' ? da.localeCompare(db) : db.localeCompare(da);
     });
-  }, [initialRecords, selectedYear, favoriteTeam, selectedOpponent, sortOrder]);
+  }, [initialRecords, effectiveYear, favoriteTeam, selectedOpponent, sortOrder]);
 
-  const { wins, losses } = useMemo(() => {
-    if (!favoriteTeam) return { wins: 0, losses: 0 };
-    let w = 0;
-    let l = 0;
-    for (const r of displayedRecords) {
-      const res = winLoss(r, favoriteTeam);
-      if (res === 'win') w++;
-      else if (res === 'loss') l++;
-    }
-    return { wins: w, losses: l };
-  }, [displayedRecords, favoriteTeam]);
-
-  const winningPercentage = formatPct(wins, losses);
+  const { wins, losses } = useMemo(
+    () => tallyWinLoss(displayedRecords, favoriteTeam),
+    [displayedRecords, favoriteTeam],
+  );
+  const winningPercentage = formatWinPct(wins, losses);
 
   const toggleId = (id: number, checked: boolean) => {
     setSelectedIds((prev) => {
@@ -161,6 +148,7 @@ export default function RecordsView({ initialRecords }: { initialRecords: Record
         await deleteRecords([...selectedIds]);
         setSelectedIds(new Set());
         setIsDeleteMode(false);
+        setFlash(FLASH_MESSAGES.deleted);
         router.refresh();
       } catch (e: unknown) {
         setError(e instanceof Error ? e.message : '削除に失敗しました');
@@ -186,67 +174,70 @@ export default function RecordsView({ initialRecords }: { initialRecords: Record
     return null;
   };
 
-  const fmtDate = (d: string) =>
-    new Date(`${d}T00:00:00+09:00`).toLocaleDateString('ja-JP', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-    });
-
   const renderMobile = () => (
     <Grid container spacing={0} sx={{ width: '100%' }}>
-      {displayedRecords.map((record) => (
-        <Grid key={record.id} sx={{ width: '100%' }}>
-          <Card sx={{ width: '100%', mb: 2, position: 'relative' }}>
-            <CardContent>
-              {isDeleteMode && (
-                <Checkbox
-                  color="primary"
-                  checked={selectedIds.has(record.id)}
-                  onChange={(e) => toggleId(record.id, e.target.checked)}
-                  sx={{ position: 'absolute', top: 8, right: 8 }}
-                />
-              )}
-              {record.games ? (
-                <Link
-                  href={`/edit/${record.id}`}
-                  style={{ textDecoration: 'none', color: 'inherit' }}
+      {displayedRecords.map((record) => {
+        const body = record.games ? (
+          <>
+            <Typography variant="body2" color="text.secondary">
+              {formatIsoDate(record.games.date)}
+            </Typography>
+            <Stack
+              direction="row"
+              alignItems="center"
+              justifyContent="center"
+              spacing={1}
+              sx={{ my: 1 }}
+            >
+              <TeamChip name={record.games.home_team} />
+              <Typography component="span">vs</Typography>
+              <TeamChip name={record.games.away_team} />
+            </Stack>
+            <Typography variant="h5" align="center" sx={{ my: 1, fontWeight: 'bold' }}>
+              {record.games.home_score} - {record.games.away_score}
+              <Box component="span" ml={1.5}>
+                {winLossMark(record)}
+              </Box>
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              {record.place}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              勝: {record.games.winning_pitcher ?? '-'} 敗: {record.games.losing_pitcher ?? '-'}
+            </Typography>
+            <Typography sx={{ whiteSpace: 'pre-wrap', mt: 1 }}>{record.memo || ''}</Typography>
+          </>
+        ) : (
+          <Typography>試合情報がありません</Typography>
+        );
+
+        return (
+          <Grid key={record.id} sx={{ width: '100%' }}>
+            <Card sx={{ width: '100%', mb: 2, position: 'relative' }}>
+              {isDeleteMode ? (
+                <CardActionArea
+                  onClick={() => toggleId(record.id, !selectedIds.has(record.id))}
+                  aria-label="削除対象として選択"
                 >
-                  <Typography variant="body2" color="text.secondary">
-                    {fmtDate(record.games.date)}
-                  </Typography>
-                  <Stack
-                    direction="row"
-                    alignItems="center"
-                    justifyContent="center"
-                    spacing={1}
-                    sx={{ my: 1 }}
-                  >
-                    <TeamChip name={record.games.home_team} />
-                    <Typography component="span">vs</Typography>
-                    <TeamChip name={record.games.away_team} />
-                  </Stack>
-                  <Typography variant="h5" align="center" sx={{ my: 1, fontWeight: 'bold' }}>
-                    {record.games.home_score} - {record.games.away_score}
-                    <Box component="span" ml={1.5}>
-                      {winLossMark(record)}
-                    </Box>
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {record.place}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    勝: {record.games.winning_pitcher ?? '-'} 敗: {record.games.losing_pitcher ?? '-'}
-                  </Typography>
-                  <Typography sx={{ whiteSpace: 'pre-wrap', mt: 1 }}>{record.memo || ''}</Typography>
-                </Link>
+                  <CardContent>
+                    <Checkbox
+                      color="primary"
+                      checked={selectedIds.has(record.id)}
+                      tabIndex={-1}
+                      sx={{ position: 'absolute', top: 8, right: 8, pointerEvents: 'none' }}
+                    />
+                    {body}
+                  </CardContent>
+                </CardActionArea>
               ) : (
-                <Typography>試合情報がありません</Typography>
+                <CardActionArea component={Link} href={`/edit/${record.id}`}>
+                  <CardContent>{body}</CardContent>
+                </CardActionArea>
               )}
-            </CardContent>
-          </Card>
-        </Grid>
-      ))}
+            </Card>
+          </Grid>
+        );
+      })}
     </Grid>
   );
 
@@ -266,50 +257,61 @@ export default function RecordsView({ initialRecords }: { initialRecords: Record
           </TableRow>
         </TableHead>
         <TableBody>
-          {displayedRecords.map((record) => (
-            <TableRow
-              key={record.id}
-              hover
-              onClick={() => !isDeleteMode && router.push(`/edit/${record.id}`)}
-              sx={{ cursor: isDeleteMode ? 'default' : 'pointer' }}
-            >
-              {isDeleteMode && (
-                <TableCell padding="checkbox" onClick={(e) => e.stopPropagation()}>
-                  <Checkbox
-                    color="primary"
-                    checked={selectedIds.has(record.id)}
-                    onChange={(e) => toggleId(record.id, e.target.checked)}
-                  />
-                </TableCell>
-              )}
-              {record.games ? (
-                <>
-                  <TableCell>{fmtDate(record.games.date)}</TableCell>
-                  <TableCell>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <TeamChip name={record.games.home_team} size={32} />
-                      vs
-                      <TeamChip name={record.games.away_team} size={32} />
-                    </Box>
+          {displayedRecords.map((record) => {
+            const open = () => router.push(`/edit/${record.id}`);
+            return (
+              <TableRow
+                key={record.id}
+                hover
+                tabIndex={isDeleteMode ? -1 : 0}
+                role={isDeleteMode ? undefined : 'link'}
+                onClick={() => !isDeleteMode && open()}
+                onKeyDown={(e) => {
+                  if (!isDeleteMode && (e.key === 'Enter' || e.key === ' ')) {
+                    e.preventDefault();
+                    open();
+                  }
+                }}
+                sx={{ cursor: isDeleteMode ? 'default' : 'pointer' }}
+              >
+                {isDeleteMode && (
+                  <TableCell padding="checkbox" onClick={(e) => e.stopPropagation()}>
+                    <Checkbox
+                      color="primary"
+                      checked={selectedIds.has(record.id)}
+                      onChange={(e) => toggleId(record.id, e.target.checked)}
+                    />
                   </TableCell>
-                  <TableCell align="center">
-                    {record.games.home_score} - {record.games.away_score}
-                    <Box component="span" ml={1.5}>
-                      {winLossMark(record)}
-                    </Box>
-                  </TableCell>
-                  <TableCell>{record.place}</TableCell>
-                  <TableCell>{record.games.winning_pitcher ?? '-'}</TableCell>
-                  <TableCell>{record.games.losing_pitcher ?? '-'}</TableCell>
-                  <TableCell sx={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
-                    {record.memo || ''}
-                  </TableCell>
-                </>
-              ) : (
-                <TableCell colSpan={isDeleteMode ? 8 : 7}>試合情報がありません</TableCell>
-              )}
-            </TableRow>
-          ))}
+                )}
+                {record.games ? (
+                  <>
+                    <TableCell>{formatIsoDate(record.games.date)}</TableCell>
+                    <TableCell>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <TeamChip name={record.games.home_team} size={32} />
+                        vs
+                        <TeamChip name={record.games.away_team} size={32} />
+                      </Box>
+                    </TableCell>
+                    <TableCell align="center">
+                      {record.games.home_score} - {record.games.away_score}
+                      <Box component="span" ml={1.5}>
+                        {winLossMark(record)}
+                      </Box>
+                    </TableCell>
+                    <TableCell>{record.place}</TableCell>
+                    <TableCell>{record.games.winning_pitcher ?? '-'}</TableCell>
+                    <TableCell>{record.games.losing_pitcher ?? '-'}</TableCell>
+                    <TableCell sx={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+                      {record.memo || ''}
+                    </TableCell>
+                  </>
+                ) : (
+                  <TableCell colSpan={isDeleteMode ? 8 : 7}>試合情報がありません</TableCell>
+                )}
+              </TableRow>
+            );
+          })}
         </TableBody>
       </Table>
     </TableContainer>
@@ -326,6 +328,17 @@ export default function RecordsView({ initialRecords }: { initialRecords: Record
           {error}
         </Alert>
       )}
+
+      <Snackbar
+        open={flash != null}
+        autoHideDuration={3000}
+        onClose={() => setFlash(null)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert severity="success" variant="filled" onClose={() => setFlash(null)}>
+          {flash}
+        </Alert>
+      </Snackbar>
 
       <Paper elevation={2} sx={{ p: 2, mb: 4 }}>
         <Stack
@@ -357,7 +370,7 @@ export default function RecordsView({ initialRecords }: { initialRecords: Record
               <InputLabel id="year-select-label">年</InputLabel>
               <Select
                 labelId="year-select-label"
-                value={availableYears.includes(selectedYear) ? selectedYear : ''}
+                value={availableYears.includes(effectiveYear) ? effectiveYear : ''}
                 label="年"
                 onChange={(e) => setSelectedYear(Number(e.target.value))}
               >
@@ -373,7 +386,7 @@ export default function RecordsView({ initialRecords }: { initialRecords: Record
           <Box sx={{ textAlign: { xs: 'center', sm: 'right' } }}>
             {favoriteTeam ? (
               <Typography variant="h6">
-                {`${selectedYear}年 ${favoriteTeam}の観戦成績: `}
+                {`${effectiveYear}年 ${favoriteTeam}の観戦成績: `}
                 <Box component="span" sx={{ fontSize: '1.5em' }}>
                   {wins}
                 </Box>

@@ -2,7 +2,8 @@
 
 import { revalidatePath } from 'next/cache';
 import { getSupabaseAdmin } from '@/lib/supabase/admin';
-import { scrapeGamesForDate, isValidDateString } from '@/lib/scrape';
+import { scrapeGamesForDate } from '@/lib/scrape';
+import { isValidDateString } from '@/lib/date';
 import type { Game } from '@/lib/types';
 
 const GAME_COLUMNS =
@@ -20,9 +21,10 @@ export async function ensureGamesForDate(date: string): Promise<Game[]> {
     .from('games')
     .select(GAME_COLUMNS)
     .eq('date', date)
-    .order('id', { ascending: true });
+    .order('id', { ascending: true })
+    .returns<Game[]>();
   if (existing.error) throw new Error(existing.error.message);
-  if (existing.data && existing.data.length > 0) return existing.data as Game[];
+  if (existing.data && existing.data.length > 0) return existing.data;
 
   const scraped = await scrapeGamesForDate(date);
   if (scraped.length > 0) {
@@ -34,9 +36,10 @@ export async function ensureGamesForDate(date: string): Promise<Game[]> {
     .from('games')
     .select(GAME_COLUMNS)
     .eq('date', date)
-    .order('id', { ascending: true });
+    .order('id', { ascending: true })
+    .returns<Game[]>();
   if (refreshed.error) throw new Error(refreshed.error.message);
-  return (refreshed.data ?? []) as Game[];
+  return refreshed.data ?? [];
 }
 
 async function resolveGamePlace(gameId: number): Promise<string> {

@@ -1,4 +1,6 @@
-// DB 行の共通型
+// DB 行の型。
+// 本来は `npx supabase gen types typescript` で生成するのが理想だが、
+// スキーマが小さく安定しているため手書きで保持している。カラムを追加したら直すこと。
 
 export interface Game {
   id: number;
@@ -11,6 +13,7 @@ export interface Game {
   stadium: string | null;
   winning_pitcher: string | null;
   losing_pitcher: string | null;
+  created_at?: string;
 }
 
 export interface RecordRow {
@@ -21,7 +24,7 @@ export interface RecordRow {
   created_at: string;
 }
 
-// 一覧で使う games を join した観戦記録
+// games を join した観戦記録（一覧・編集で使う）
 export interface RecordWithGame {
   id: number;
   place: string;

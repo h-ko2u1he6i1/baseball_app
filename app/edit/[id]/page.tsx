@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
 import { getSupabaseAdmin } from '@/lib/supabase/admin';
+import { unwrapOne } from '@/lib/supabase/unwrap';
 import RecordForm from '@/app/_components/RecordForm';
 
 export const metadata = { title: '観戦記録を編集' };
@@ -17,11 +18,11 @@ export default async function EditRecordPage({
     .from('records')
     .select('id, game_id, memo, games:games!records_game_id_fkey(date)')
     .eq('id', recordId)
-    .single();
+    .single<{ id: number; game_id: number | null; memo: string | null; games: { date: string } | { date: string }[] | null }>();
 
   if (error || !data) notFound();
 
-  const game = Array.isArray(data.games) ? data.games[0] : data.games;
+  const game = unwrapOne(data.games);
 
   return (
     <RecordForm
