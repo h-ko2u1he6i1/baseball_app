@@ -1,19 +1,17 @@
+/* テーマ（背景色・配色）は MUI が管理する。ここは最小限のみ。 */
+
+html,
 body {
-  margin: 0;
   padding: 0;
-  background-image: url('/assets/ph.jpg');
-  background-size: cover;
-  background-position: center;
-  background-attachment: fixed;
+  margin: 0;
 }
 
-/* モバイルでは fixed 背景がカクつくため無効化 */
-@media (max-width: 600px) {
-  body {
-    background-attachment: scroll;
-  }
+/* 初回ペイントのちらつき防止用（InitColorSchemeScript がクラスを付けるまでの下地） */
+html.dark {
+  color-scheme: dark;
+  background-color: #0b0f17;
 }
-
-.MuiGrid-direction-xs-row {
-  width: 100%;
+html.light {
+  color-scheme: light;
+  background-color: #eef1f5;
 }
